@@ -31,6 +31,6 @@ let urlDB;
 if (process.env.NODE_ENV === 'dev') {
     urlDB = 'mongodb://localhost:27017/ebook';
 } else {
-    urlDB = process.env.MONGO_URI;
+    urlDB = 'mongodb://ebook-user:45PZ9uGQ@ds215961.mlab.com:15961/ebook';
 }
 process.env.URLDB = urlDB;

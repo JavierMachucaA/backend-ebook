@@ -1,34 +1,25 @@
-const express = require('express')
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const _ = require('underscore');
+const Categoria = require('../models/categoria');
+const app = express();
+const log = require('../../utils/logger');
 
-const bcrypt = require('bcryptjs')
-
-const _ = require('underscore')
-
-var salt = bcrypt.genSaltSync(12);
-
-const Usuario = require('../models/usuario')
-
-const  {verificarToken,verificaAdminRol}  = require('../middleware/autenticacion')
-
-const app = express()
-
-const log = require('../../utils/logger')
-
-app.get('/usuarios',[verificarToken], function (req, res) {
+app.get('/categorias',verificarToken, function (req, res) {
     
     let desde = req.query.desde || 0;
     desde = Number(desde);
 
     let limite = req.query.limite || 5;
     limite = Number(limite);
-    let condiciones = {estado:true} //google:true
-    let campos = 'nombre email role estado google img'
+    let condiciones = {habilitada:true} //google:true
+    let campos = 'nombre principales descripcion usuario habilitada';
     
-    Usuario.find(condiciones,campos)
+    Categoria.find(condiciones,campos)
     .skip(desde)
     .limit(limite)
     .exec(
-        (err,usuarios)=>{
+        (err,categorias)=>{
             console.log("desde",desde," limite",limite)
         if(err){
             return res.status(400).json({ 
@@ -37,7 +28,7 @@ app.get('/usuarios',[verificarToken], function (req, res) {
             });
         }
         //console.log("consultando usuarios ")
-        Usuario.countDocuments(condiciones,(error,conteo)=>{
+        Categoria.countDocuments(condiciones,(error,conteo)=>{
             if(error){
                 return res.status(400).json({ 
                     status: false,
@@ -47,26 +38,26 @@ app.get('/usuarios',[verificarToken], function (req, res) {
             //console.log("sin errores ")
             res.json({
                 status: true,
-                mensaje: usuarios,
+                mensaje: categorias,
                 total:conteo
             })
         })
     })
 })
 
-app.post('/usuario',[verificarToken,verificaAdminRol], function (req, res) { //[verificarToken,verificaAdminRol],
+app.post('/categoria', function (req, res) { //[verificarToken,verificaAdminRol],
     
     let body = req.body
     
-    let usuario = new Usuario({
+    let categoria = new Categoria({
         nombre : body.nombre,
-        email:body.email,
-        password: bcrypt.hashSync(body.password, salt),
-        role: body.role,
-        estado: true,
+        principales:body.principales,
+        descripcion: body.descripcion,
+        usuario: body.role,
+        habilitada: true,
     })
     
-    usuario.save((err,usuarioDB)=>{
+    categoria.save((err,categoriaDB)=>{
         if(err){
             return res.status(400).json({
                 status: false,
@@ -76,11 +67,11 @@ app.post('/usuario',[verificarToken,verificaAdminRol], function (req, res) { //[
        
         res.json({
             status : true,
-            usuario : usuarioDB
+            usuario : categoriaDB
         });
     })
 
-})
+});
 
 app.put('/usuarios/:id',[verificarToken,verificaAdminRol], function (req, res) {
     let id = req.params.id
@@ -110,7 +101,7 @@ app.put('/usuarios/:id',[verificarToken,verificaAdminRol], function (req, res) {
 
 })
 
-app.delete('/usuario/:id',[verificarToken,verificaAdminRol], function (req, res) {
+app.delete('/usuario/:id',verificarToken, function (req, res) {
     
     let id = req.params.id
 

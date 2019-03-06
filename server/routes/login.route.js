@@ -12,16 +12,23 @@ const Usuario = require('../models/usuario');
 
 const app = express()
 
-app.post('/login',(req,res)=>{
+app.get('/status', function (req, res) {
+    res.json('Backend Funcionando');
+})
 
+app.post('/login',(req,res)=>{
+    
     let body = req.body;
+    console.log("conectandose login ",body);    
     Usuario.findOne({ email : body.email },(err, usuario)=>{
+        console.log("buscando email ");    
         if(err){
             return res.status(500).json({ 
                 status: false,
                 mensaje: err
             });
         }
+        console.log("sin errores "+process.env.NODE_ENV);    
         if(!usuario){
             return res.status(400).json({ 
                 status: false,
@@ -29,24 +36,25 @@ app.post('/login',(req,res)=>{
                 mensaje: 'usuario y contraseña incorrectos '
             });
         }
-        if(!bcrypt.compareSync( body.password , usuario.password)){
+        console.log("Se validaran las contraseñas"+body.password);
+        if(!bcrypt.compareSync( body.password , usuario.password)){ 
             return res.status(400).json({ 
                 status: false,
                 code:2,
                 mensaje: 'usuario y contraseña incorrectos '
             });
         }
-
+        console.log("Se generará token");
         let token = jwt.sign({
             usuario,
-        },process.env.SEED,{expiresIn : process.env.EXPIRATION_SESSION})
-
+        },process.env.SEED,{expiresIn : process.env.EXPIRATION_SESSION});
+        console.log("Se genera respuesta ");
         res.json({
             status: true,
             code:0,
             usuario,
             token: token
-        })
+        });
     })
 
 })

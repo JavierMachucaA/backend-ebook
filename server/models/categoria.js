@@ -10,15 +10,12 @@ const Schema = mongoose.Schema;
 // Schemas
 // =======
 
-const RecetaSchema = new Schema({
+const CategoriaSchema = new Schema({
   nombre: { type: String, required: [true, 'El nombre es necesario'] },
-  listaIngredientes: { type: Array, required: true, default: [] },
+  principales: { type: Array, required: true, default: [] },
   descripcion: { type: String, required: true },
-  categoria: { type: Schema.Types.ObjectId, ref: 'Categoria' },
-  usuario: {type:String},//{ type: Schema.Types.ObjectId, ref: 'Usuario' },
-  habilitada:{type:Boolean},
-
-  img: { type: String,  required: false}
+  usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' },
+  habilitada:{type:Boolean}
 });
 
-module.exports = mongoose.model('receta', RecetaSchema);
+module.exports = mongoose.model('categoria', CategoriaSchema);
